@@ -7,7 +7,10 @@ frameworkVersion: '2'
 custom:
   currentStage: ${opt:stage, self:provider.stage}
   lambdaRunTime: python3.8
+  userPoolName: users-#{AWS::AccountId}-${self:custom.currentStage}
+  userPoolDomain: meitou-users-#{AWS::AccountId}-${self:custom.currentStage}
   channelTable: channels-#{AWS::AccountId}-${self:custom.currentStage}
+  dynamoDefaultRoleName: dynamoDefaultRole-#{AWS::AccountId}-${self:custom.currentStage}
 
 provider:
   name: aws
@@ -23,28 +26,17 @@ provider:
 
 plugins:
   - serverless-pseudo-parameters
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
 
-# you can add packaging information here
+# packaging information
 package:
   individually: true
   exclude:
     - "lib/**"
     - "node_modules/**"
+    - "Makefile"
+    - "package-lock.json"
+    - "python-packages.txt"
+    - "README.md"
 
 layers:
   pythonPackageLayer:
@@ -55,13 +47,43 @@ layers:
       - ${self:custom.lambdaRunTime}
 
 functions:
+  ws_connect:
+    handler: func/chat/connect.handler
+    events:
+      - websocket: $connect
+    layers:
+      - { Ref: PythonPackageLayerLambdaLayer }
+
+  ws_disconnect:
+    handler: func/chat/disconnect.handler
+    events:
+      - websocket: $disconnect
+    layers:
+      - { Ref: PythonPackageLayerLambdaLayer }
+
+  ws_on_message:
+    handler: func/chat/onmessage.handler
+    events:
+      - websocket: onMessage
+    layers:
+      - { Ref: PythonPackageLayerLambdaLayer }
+
   hello:
     handler: handler.hello
     layers:
       - { Ref: PythonPackageLayerLambdaLayer }
 
   channel_list:
-    handler: func/model/channel_handler.list_channels
+    handler: func/channel/list.handler
+    role:
+      - DynamoRoleDefault
+    layers:
+      - { Ref: PythonPackageLayerLambdaLayer }
+
+  channel_get:
+    handler: func/channel/get.handler
+    role:
+      - DynamoRoleDefault
     layers:
       - { Ref: PythonPackageLayerLambdaLayer }
 #    The following are a few example events you can configure
@@ -107,7 +129,7 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    channelTable:
+    ChannelTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Delete
       Properties:
@@ -125,3 +147,54 @@ resources:
         BillingMode: PAY_PER_REQUEST
         SSESpecification:
           SSEEnabled: true
+    
+    UserPoolDomain: 
+      Type: AWS::Cognito::UserPoolDomain 
+      Properties:
+        UserPoolId: !Ref UserPool 
+        Domain: ${self:custom.userPoolDomain}
+
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:custom.userPoolName}
+        UsernameAttributes: 
+          - email
+
+    DynamoRoleDefault:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:custom.dynamoDefaultRoleName}
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: myPolicyName
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+                - Effect: "Allow"
+                  Action:
+                    - "dynamodb:*"
+                  Resource:
+                    - Fn::GetAtt:
+                      - ChannelTable
+                      - Arn

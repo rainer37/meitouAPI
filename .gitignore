@@ -23,3 +23,8 @@ python
 
 # Node Modules
 node_modules/
+
+# py cache
+__pycache__/
+*.py[cod]
+*$py.class

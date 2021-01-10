@@ -3,7 +3,7 @@ import os
 
 from boto3.dynamodb.conditions import Key
 
-def list_channels(event, context):
+def handler(event, context):
 	dynamodb = boto3.resource('dynamodb', region_name=os.environ['REGION'])
 	table = dynamodb.Table(os.environ['CHANNEL_TABLE'])
 	
@@ -15,7 +15,7 @@ def list_channels(event, context):
 	data = response.get('Items', [])
 
 	print(data)
-
+ 
 	return {
 		'statusCode': 200,
 		'body': 'channels listed'
