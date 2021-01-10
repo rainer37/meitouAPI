@@ -46,5 +46,5 @@ jobs:
           pip install boto3
           export REGION=us-west-2
           export CHANNEL_TABLE_NAME=channels-134507892782-dev
-          python3 util/dynamo_test.py
+          python util/dynamo_test.py
   
