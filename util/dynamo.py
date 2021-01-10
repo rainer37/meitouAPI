@@ -1,9 +1,7 @@
-# from meitouAWS import Channel
 import boto3
 import logging
 import uuid
 
-from data.model.channel import Channel
 from botocore.exceptions import ClientError
 
 class DyanmoExecutor:
