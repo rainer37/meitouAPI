@@ -6,9 +6,9 @@ name: Tester
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ play ]
   pull_request:
-    branches: [ main ]
+    branches: [ play ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -43,4 +43,7 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+          export REGION=us-west-2
+          export CHANNEL_TABLE_NAME=channels-134507892782-dev
+          python3 util/dynamo_test.py
   
