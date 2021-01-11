@@ -3,12 +3,12 @@ import unittest
 import json
 import os
 import sys
-sys.path.insert(0, os.environ['PWD'] + '/util/meitoudata/model')
+sys.path.insert(0, os.environ['PWD'] + '/')
 
 import dynamo
 
-# from meitoudata.model.channel import Channel
-from channel import Channel
+from util.meitoudata.model.channel import Channel
+# from channel import Channel
 
 channel_table = os.environ['CHANNEL_TABLE_NAME']
 dynamodb = boto3.resource('dynamodb', region_name=os.environ['REGION'])
