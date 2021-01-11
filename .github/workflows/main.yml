@@ -35,6 +35,8 @@ jobs:
           pip install boto3
           export REGION=us-west-2
           export CHANNEL_TABLE_NAME=channels-134507892782-dev
+          export AWS_ACCESS_KEY_ID=${{ secrets.MEITOU_AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.MEITOU_AWS_SECRET_ACCESS_KEY }}
           ls util
           python util/dynamo_test.py
   
