@@ -1,5 +1,6 @@
 import boto3
 import unittest
+import json
 import os
 import sys
 sys.path.insert(0, os.environ['PWD'] + '/util/meitoudata/model')
@@ -36,11 +37,12 @@ class TestDynamoExecutor(unittest.TestCase):
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
         resp = executor.get_channel_by_id(self.__class__.channel_id)
         self.assertEqual(resp['statusCode'], 200)
-        self.assertEqual(resp['body']['channel_id'], self.__class__.channel_id)
-        self.assertEqual(resp['body']['channel_name'], 'Channel V')
-        self.assertEqual(resp['body']['channel_desc'], 'V channel')
-        self.assertEqual(resp['body']['owner'], 'V user')
-        self.assertEqual(resp['body']['sub_fee'], 30)
+        body = json.loads(resp['body'])
+        self.assertEqual(body['channel_id'], self.__class__.channel_id)
+        self.assertEqual(body['channel_name'], 'Channel V')
+        self.assertEqual(body['channel_desc'], 'V channel')
+        self.assertEqual(body['owner'], 'V user')
+        self.assertEqual(body['sub_fee'], 30)
 
     def test_get_channel_fail_unknown_table(self):
         table_name = 'some-random-table'
@@ -58,7 +60,7 @@ class TestDynamoExecutor(unittest.TestCase):
     
     @classmethod
     def tearDownClass(cls):
-        print('tear down')
+        print('tear down added item')
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
         resp = executor.delete_channel_by_id(__class__.channel_id)
         print(resp)

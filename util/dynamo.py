@@ -3,6 +3,7 @@ import logging
 import uuid
 
 from botocore.exceptions import ClientError
+from util.meitoudata.model.channel import Channel
 
 class DyanmoExecutor:
   def __init__(self, client, table_name):
@@ -36,9 +37,13 @@ class DyanmoExecutor:
       resp = table.get_item(Key={'channel_id': channel_id, 'channel_sk': 'GENERAL_INFO'})
       if resp['ResponseMetadata']['HTTPStatusCode'] == 200 and 'Item' in resp:   
         # logging.info(resp['Item'])
+        item = resp['Item']
+        ch = Channel(item['channel_name'], item['channel_desc'], item['owner'], int(item['sub_fee']))
+        ch.set_id(item['channel_id'])
+
         return {
           'statusCode': 200,
-          'body': resp['Item']
+          'body': ch.to_json()
         }
       else:
         statusCode = 405
