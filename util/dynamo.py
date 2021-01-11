@@ -38,7 +38,7 @@ class DyanmoExecutor:
         # logging.info(resp['Item'])
         return {
           'statusCode': 200,
-          'channel': resp['Item']
+          'body': resp['Item']
         }
       else:
         statusCode = 405
@@ -72,7 +72,7 @@ class DyanmoExecutor:
       )
       if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
         return {
-          'channel_id': new_id,
+          'body': new_id,
           'statusCode': 200
         }
       else:

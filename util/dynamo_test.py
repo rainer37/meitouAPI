@@ -21,7 +21,7 @@ class TestDynamoExecutor(unittest.TestCase):
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
         resp = executor.add_channel(ch)
         self.assertEqual(resp['statusCode'], 200)
-        self.__class__.channel_id = resp['channel_id']
+        self.__class__.channel_id = resp['body']
 
     def test_add_channel_fail_unknown_table(self):
         ch = Channel('Channel V', 'V channel', 'V user', 30)
@@ -36,11 +36,11 @@ class TestDynamoExecutor(unittest.TestCase):
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
         resp = executor.get_channel_by_id(self.__class__.channel_id)
         self.assertEqual(resp['statusCode'], 200)
-        self.assertEqual(resp['channel']['channel_id'], self.__class__.channel_id)
-        self.assertEqual(resp['channel']['channel_name'], 'Channel V')
-        self.assertEqual(resp['channel']['channel_desc'], 'V channel')
-        self.assertEqual(resp['channel']['owner'], 'V user')
-        self.assertEqual(resp['channel']['sub_fee'], 30)
+        self.assertEqual(resp['body']['channel_id'], self.__class__.channel_id)
+        self.assertEqual(resp['body']['channel_name'], 'Channel V')
+        self.assertEqual(resp['body']['channel_desc'], 'V channel')
+        self.assertEqual(resp['body']['owner'], 'V user')
+        self.assertEqual(resp['body']['sub_fee'], 30)
 
     def test_get_channel_fail_unknown_table(self):
         table_name = 'some-random-table'
