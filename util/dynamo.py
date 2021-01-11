@@ -8,7 +8,7 @@ class DyanmoExecutor:
   def __init__(self, client, table_name):
     self.client = client
     self.table_name = table_name
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s - %(levelname)s %(message)s', level=logging.INFO)
       
   # tester
   def scan_table(self):
@@ -21,7 +21,7 @@ class DyanmoExecutor:
       resp = table.delete_item(
         Key={
           'channel_id': channel_id,
-          'channel_sk': 'GENERAL_INFO'
+          'channel_sk': 'GENERAL_INFO',
         }
       )
       # logging.info(resp)
@@ -35,7 +35,7 @@ class DyanmoExecutor:
     try:
       resp = table.get_item(Key={'channel_id': channel_id, 'channel_sk': 'GENERAL_INFO'})
       if resp['ResponseMetadata']['HTTPStatusCode'] == 200 and 'Item' in resp:   
-        logging.info(resp['Item'])
+        # logging.info(resp['Item'])
         return {
           'statusCode': 200,
           'channel': resp['Item']
@@ -65,6 +65,9 @@ class DyanmoExecutor:
           'channel_id': new_id,
           'channel_sk': 'GENERAL_INFO',
           'channel_name': channel.name,
+          'channel_desc': channel.desc,
+          'owner': channel.owner,
+          'sub_fee': channel.fee
         }
       )
       if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
