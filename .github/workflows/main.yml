@@ -36,6 +36,5 @@ jobs:
           export REGION=us-west-2
           export CHANNEL_TABLE_NAME=channels-134507892782-dev
           ls util
-          cd util
           python dynamo_test.py
   
