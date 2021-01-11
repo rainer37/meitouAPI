@@ -10,7 +10,7 @@ import dynamo
 from util.meitoudata.model.channel import Channel
 # from channel import Channel
 
-channel_table = os.environ['CHANNEL_TABLE_NAME']
+channel_table = os.environ['CHANNEL_TABLE']
 dynamodb = boto3.resource('dynamodb', region_name=os.environ['REGION'])
 
 class TestDynamoExecutor(unittest.TestCase):

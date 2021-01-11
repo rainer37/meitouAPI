@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Tester
+name: MeiTou Serverless API
 
 # Controls when the action will run. 
 on:
@@ -28,10 +26,11 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo test, and deploy your project.
-          pip3 install boto3
+          pip3 install boto3 > /dev/null
           export REGION=us-west-2
-          export CHANNEL_TABLE_NAME=channels-134507892782-dev
+          export CHANNEL_TABLE=channels-134507892782-dev
           export AWS_ACCESS_KEY_ID=${{ secrets.MEITOU_AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.MEITOU_AWS_SECRET_ACCESS_KEY }}
           python3 util/*_test.py
+          python3 func/channel/test.py
   
