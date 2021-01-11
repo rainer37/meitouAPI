@@ -4,9 +4,12 @@ import os
 import sys
 print(sys.path)
 sys.path.insert(0, os.environ['PWD'] + '/util/meitoudata/model')
+print(sys.path)
+
 import dynamo
 
-from meitoudata.model.channel import Channel
+# from meitoudata.model.channel import Channel
+from channel import Channel
 
 channel_table = os.environ['CHANNEL_TABLE_NAME']
 dynamodb = boto3.resource('dynamodb', region_name=os.environ['REGION'])
