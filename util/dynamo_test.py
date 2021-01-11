@@ -2,9 +2,7 @@ import boto3
 import unittest
 import os
 import sys
-print(sys.path)
 sys.path.insert(0, os.environ['PWD'] + '/util/meitoudata/model')
-print(sys.path)
 
 import dynamo
 
