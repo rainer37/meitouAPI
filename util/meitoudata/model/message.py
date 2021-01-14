@@ -1,3 +1,5 @@
+import json
+
 SPECIAL_QUESTION_TAG = 'SQ'
 IMAGE_TAG = 'IMG'
 PRIVACY_TAG = 'PRIV'
@@ -9,9 +11,10 @@ class Message:
     
     reversed_tags = [SPECIAL_QUESTION_TAG, IMAGE_TAG, PRIVACY_TAG]
     
-    def __init__(self, content, sender, channel_id, hashtags=""):
+    def __init__(self, id, content, sender, channel_id, hashtags=""):
+        self.msg_id = id
         self.content = content
-        self.sender = sender
+        self.sender_id = sender
         self.channel_id = channel_id
         self.hashtags = hashtags
         
@@ -38,3 +41,11 @@ class Message:
         Special question is identified by having a SQ tag in hashtag string
         '''
         return SPECIAL_QUESTION_TAG in self.hashtags.split(',')
+    
+    def to_json(self):
+        return json.dumps(self.__dict__)
+    
+    @classmethod
+    def from_json(cls, input_json):
+        json_dict = json.loads(input_json)
+        return cls(json_dict['msg_id'], json_dict['content'], json_dict['sender_id'], json_dict['channel_id'], json_dict['hashtags'])

@@ -1,3 +1,6 @@
+from util.meitoudata.model.Message import Message
+import util.dynamo as dynamo
+
 def handler(event, context):
     pass
 
