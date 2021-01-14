@@ -32,5 +32,6 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.MEITOU_AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.MEITOU_AWS_SECRET_ACCESS_KEY }}
           python3 util/*_test.py
-          python3 func/channel/test.py
+          python3 util/meitoudata/model/*_test.py
+          python3 func/*/test.py
   
