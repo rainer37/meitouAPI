@@ -10,6 +10,7 @@ custom:
   userPoolName: users-#{AWS::AccountId}-${self:custom.currentStage}
   userPoolDomain: meitou-users-#{AWS::AccountId}-${self:custom.currentStage}
   channelTable: channels-#{AWS::AccountId}-${self:custom.currentStage}
+  chatHistoryTable: chat-#{AWS::AccountId}-${self:custom.currentStage}
   dynamoDefaultRoleName: dynamoDefaultRole-#{AWS::AccountId}-${self:custom.currentStage}
 
 provider:
@@ -22,6 +23,7 @@ provider:
   timeout: 28
   environment:
     CHANNEL_TABLE: ${self:custom.channelTable}
+    CHAT_TABLE: ${self:custom.chatHistoryTable}
     REGION: ${self:provider.region}
 
 plugins:
@@ -163,6 +165,25 @@ resources:
         SSESpecification:
           SSEEnabled: true
     
+    ChatHistoryTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        TableName: ${self:custom.chatHistoryTable}
+        AttributeDefinitions:
+          - AttributeName: channel_id
+            AttributeType: S
+          - AttributeName: msg_sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: channel_id
+            KeyType: HASH
+          - AttributeName: msg_sk
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        SSESpecification:
+          SSEEnabled: true
+
     UserPoolDomain: 
       Type: AWS::Cognito::UserPoolDomain 
       Properties:
