@@ -119,15 +119,29 @@ class TestDynamoExecutor(unittest.TestCase):
         self.assertEqual(resp['statusCode'], 405)
         self.assertEqual(resp['errMsg'], 'no such message')
 
+    def test_add_connection_to_channel_success(self):
+        executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
+        resp = executor.add_connection_to_channel('ABCD123', self.__class__.channel_id)
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertEqual(resp['body'], 'ABCD123')
+        
+        resp = executor.add_connection_to_channel('78123AB', self.__class__.channel_id)
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertEqual(resp['body'], '78123AB')
+        
+        resp = executor.get_all_connections_in_channel(self.__class__.channel_id)
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertTrue('CONN#ABCD123' in resp['body'])
+        self.assertTrue('CONN#78123AB' in resp['body'])
+
     @classmethod
     def tearDownClass(cls):
         print('tear down added item')
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
-        resp = executor.delete_channel_by_id(__class__.channel_id)
-        print(resp)
+        executor.delete_channel_by_id(__class__.channel_id)
+        executor.clear_connections_in_chan(__class__.channel_id)
         executor = dynamo.DyanmoExecutor(dynamodb, chat_table)
-        resp = executor.delete_message_by_id(__class__.channel_id, __class__.msg_sk)
-        print(resp)
+        executor.delete_message_by_id(__class__.channel_id, __class__.msg_sk)
 
 if __name__ == '__main__':
     unittest.main()

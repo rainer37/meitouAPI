@@ -6,6 +6,7 @@ import uuid
 
 from botocore.exceptions import ClientError
 from util.meitoudata.model.channel import Channel
+from boto3.dynamodb.conditions import Key
 
 class DyanmoExecutor:
   def __init__(self, client, table_name):
@@ -18,16 +19,19 @@ class DyanmoExecutor:
     print('scanning table', self.table_name)
   
   def delete_channel_by_id(self, channel_id):
+    return self.delete_channel_by_keys(channel_id, 'GENERAL_INFO')
+  
+  def delete_channel_by_keys(self, channel_id, channel_sk):
     try:
       resp = self.table.delete_item(
         Key={
           'channel_id': channel_id,
-          'channel_sk': 'GENERAL_INFO',
+          'channel_sk': channel_sk,
         }
       )
       # logging.info(resp)
     except Exception as e:
-      logging.error(e)
+      logging.error(e) 
   
   def get_channel_by_id(self, channel_id):
     errMsg = 'default error message, we should never see this'
@@ -179,3 +183,66 @@ class DyanmoExecutor:
   
   def get_all_message_in_channel(self, channel_id):
     pass
+  
+  def add_connection_to_channel(self, conn_id, channel_id):
+    logging.info("adding conn {0} to channel {0}".format(conn_id, channel_id))
+    errMsg = 'default error message, we should never see this'
+    statusCode = 400
+    try:
+      resp = self.table.put_item(
+        Item = {
+          'channel_id': channel_id,
+          'channel_sk': "CONN#{0}".format(conn_id),
+        }
+      )
+      if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
+        return {
+          'body': conn_id,
+          'statusCode': 200
+        }
+      else:
+        errMsg = 'unknown http status code ' +  resp['ResponseMetadata']['HTTPStatusCode']
+    except Exception as e:
+      logging.error(e)
+      errMsg = str(e)
+      statusCode = 404
+
+    return {
+      'statusCode': statusCode,
+      'errMsg': errMsg
+    }
+  
+  def get_all_connections_in_channel(self, channel_id):
+    logging.info("getting all connections in {0}".format(channel_id))
+    new_id = str(uuid.uuid4())
+    errMsg = 'default error message, we should never see this'
+    statusCode = 400
+    try:
+      resp = self.table.query(
+        ProjectionExpression="channel_sk",
+        KeyConditionExpression=Key('channel_id').eq(channel_id) & Key('channel_sk').begins_with('CONN#'),
+      )
+      conns = [chan['channel_sk'] for chan in resp['Items']]
+      if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
+        return {
+          'body': conns,
+          'statusCode': 200
+        }
+      else:
+        errMsg = 'unknown http status code ' +  resp['ResponseMetadata']['HTTPStatusCode']
+    except Exception as e:
+      logging.error(e)
+      errMsg = str(e)
+      statusCode = 404
+
+    return {
+      'statusCode': statusCode,
+      'errMsg': errMsg
+    }
+    pass
+  
+  def clear_connections_in_chan(self, channel_id):
+    conns = self.get_all_connections_in_channel(channel_id)['body']
+    for conn in conns:
+      print('deleting', conn)
+      self.delete_channel_by_keys(channel_id, conn)
