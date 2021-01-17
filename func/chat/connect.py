@@ -14,4 +14,6 @@ def handler(event, context):
     channel_id = event['headers']['channel_id'];
     print(conn_id, channel_id)
     executor.add_connection_to_channel(conn_id, channel_id)
-    return {}
+    return {
+        'statusCode': 200
+    }

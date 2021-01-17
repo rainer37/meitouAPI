@@ -29,9 +29,16 @@ class DyanmoExecutor:
           'channel_sk': channel_sk,
         }
       )
-      # logging.info(resp)
+      return {
+        'statusCode': 200,
+        'body': channel_id,
+      }
     except Exception as e:
-      logging.error(e) 
+      logging.error(e)
+      return {
+        'statusCode': 400,
+        'errMsg': str(e)
+      }
   
   def get_channel_by_id(self, channel_id):
     errMsg = 'default error message, we should never see this'
@@ -303,3 +310,14 @@ class DyanmoExecutor:
     for conn in conns:
       # print('deleting', conn)
       self.delete_channel_by_keys(channel_id, conn)
+      
+  def remove_connection(self, conn_id):
+    channel_ids = self.get_all_channel_ids()['body']
+    logging.info(channel_ids)
+    for channel_id in channel_ids:
+      resp = self.delete_channel_by_keys(channel_id, f'CONN#{conn_id}')
+      logging.info(resp)
+    return {
+      'statusCode': 200,
+      'body': conn_id
+    }

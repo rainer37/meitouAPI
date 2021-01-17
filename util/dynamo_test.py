@@ -71,7 +71,7 @@ class TestDynamoExecutor(unittest.TestCase):
         resp = executor.get_all_channel_ids()
         self.assertEqual(resp['statusCode'], 200)
         self.assertTrue(self.__class__.channel_id in resp['body'])
-        
+
     def test_insert_message_success(self):
         msg_0 = {
             'channel_id': self.__class__.channel_id,
@@ -145,6 +145,11 @@ class TestDynamoExecutor(unittest.TestCase):
         self.assertEqual(resp['statusCode'], 200)
         self.assertTrue('CONN#ABCD123' in resp['body'])
         self.assertTrue('CONN#78123AB' in resp['body'])
+        
+        executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
+        resp = executor.remove_connection('ABCD123')
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertEqual(resp['body'], 'ABCD123')
 
     @classmethod
     def tearDownClass(cls):
@@ -152,6 +157,7 @@ class TestDynamoExecutor(unittest.TestCase):
         executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
         executor.delete_channel_by_id(__class__.channel_id)
         executor.clear_connections_in_chan(__class__.channel_id)
+        executor.delete_channel_by_keys('ALL_CHANNELS', 'ALL_CHANNELS')
         executor = dynamo.DyanmoExecutor(dynamodb, chat_table)
         executor.delete_message_by_id(__class__.channel_id, __class__.msg_sk)
 

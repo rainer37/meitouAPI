@@ -12,4 +12,7 @@ executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
 def handler(event, context):
     print(event)
     conn_id = event['requestContext']['connectionId']
-    return {}
+    executor.remove_connection(conn_id)
+    return {
+        'statusCode': 200
+    }
