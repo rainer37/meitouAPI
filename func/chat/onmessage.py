@@ -81,11 +81,15 @@ def _broadcast_message(msg, channel_id, endpoint):
         endpoint_url = endpoint,
     )
     
-    for connection_id in all_connection_ids:
-        apigatewaymanagementapi.post_to_connection(
-            Data=msg,
-            ConnectionId=connection_id.split('#')[1]
-        )
+    try:
+        for connection_id in all_connection_ids:
+            try:
+                apigatewaymanagementapi.post_to_connection(
+                    Data=msg,
+                    ConnectionId=connection_id.split('#')[1]
+                )
+            except Exception as e:
+                print(e)
 
 def _process_norm(raw_message):
     pass
