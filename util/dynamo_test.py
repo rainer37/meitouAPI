@@ -60,6 +60,18 @@ class TestDynamoExecutor(unittest.TestCase):
         self.assertEqual(resp['statusCode'], 405)
         self.assertEqual(resp['errMsg'], 'no such channel')
         
+    def test_add_channel_to_list_success(self):
+        executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
+        resp = executor.record_channel_in_list( self.__class__.channel_id)
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertEqual(resp['body'],  self.__class__.channel_id)
+        
+    def test_get_all_channel_ids_success(self):
+        executor = dynamo.DyanmoExecutor(dynamodb, channel_table)
+        resp = executor.get_all_channel_ids()
+        self.assertEqual(resp['statusCode'], 200)
+        self.assertTrue(self.__class__.channel_id in resp['body'])
+        
     def test_insert_message_success(self):
         msg_0 = {
             'channel_id': self.__class__.channel_id,

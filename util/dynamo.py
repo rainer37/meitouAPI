@@ -61,6 +61,66 @@ class DyanmoExecutor:
       'errMsg': errMsg
     }
   
+  def record_channel_in_list(self, channel_id):
+    logging.info("record new channel {0} in global list".format(channel_id))
+    errMsg = 'default error message, we should never see this'
+    statusCode = 400
+    try:
+      resp = self.table.update_item(
+        Key = {
+          'channel_id': 'ALL_CHANNELS',
+          'channel_sk': 'ALL_CHANNELS',
+        },
+        UpdateExpression="ADD channels :ch",
+        ExpressionAttributeValues={':ch': set([channel_id])},
+        ReturnValues="UPDATED_NEW"
+      )
+      if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
+        return {
+          'body': channel_id,
+          'statusCode': 200
+        }
+      else:
+        errMsg = 'unknown http status code ' +  resp['ResponseMetadata']['HTTPStatusCode']
+    except Exception as e:
+      logging.error(e)
+      errMsg = str(e)
+      statusCode = 404
+
+    return {
+      'statusCode': statusCode,
+      'errMsg': errMsg
+    }
+  
+  def get_all_channel_ids(self):
+    errMsg = 'default error message, we should never see this'
+    statusCode = 400
+    try:
+      resp = self.table.get_item(
+        Key={'channel_id': 'ALL_CHANNELS', 'channel_sk': 'ALL_CHANNELS'},
+        ProjectionExpression="channels",
+      )
+      if resp['ResponseMetadata']['HTTPStatusCode'] == 200 and 'Item' in resp:   
+        # logging.info(resp['Item'])
+        item = resp['Item']
+
+        return {
+          'statusCode': 200,
+          'body': item['channels']
+        }
+      else:
+        statusCode = 405
+        errMsg = 'no such message'
+    except Exception as e:
+      logging.error(e)
+      errMsg = str(e)
+      statusCode = 404
+
+    return {
+      'statusCode': statusCode,
+      'errMsg': errMsg
+    }    
+  
   def add_channel(self, channel):
     logging.info("adding channel {0}".format(channel.name))
     new_id = str(uuid.uuid4())
@@ -77,11 +137,8 @@ class DyanmoExecutor:
           'sub_fee': channel.fee
         }
       )
-      if resp['ResponseMetadata']['HTTPStatusCode'] == 200:   
-        return {
-          'body': new_id,
-          'statusCode': 200
-        }
+      if resp['ResponseMetadata']['HTTPStatusCode'] == 200:
+        return self.record_channel_in_list(new_id)
       else:
         errMsg = 'unknown http status code ' +  resp['ResponseMetadata']['HTTPStatusCode']
     except Exception as e:
@@ -244,5 +301,5 @@ class DyanmoExecutor:
   def clear_connections_in_chan(self, channel_id):
     conns = self.get_all_connections_in_channel(channel_id)['body']
     for conn in conns:
-      print('deleting', conn)
+      # print('deleting', conn)
       self.delete_channel_by_keys(channel_id, conn)
